@@ -337,66 +337,7 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-header">
-                  <h5>Cobertura por Região</h5>
-                </div>
-                <div class="card-body">
-                  <div class="chart-container">
-                    <canvas id="regionChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-header">
-                  <h5>Cobertura por Tipologia Municipal</h5>
-                </div>
-                <div class="card-body">
-                  <div class="chart-container">
-                    <canvas id="typeChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-12">
-              <div class="card">
-                <div class="card-header">
-                  <h5>
-                    Relação entre UBS por 10.000 habitantes e Cobertura Vacinal
-                  </h5>
-                </div>
-                <div class="card-body">
-                  <div class="chart-container">
-                    <canvas id="scatterChart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-12">
-              <div class="card">
-                <div class="card-header">
-                  <h5>Resumo das Análises</h5>
-                </div>
-                <div class="card-body">
-                  <div id="summaryContent" class="p-3">
-                    Carregando resumo...
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          </div>          
         </main>
       </div>
     </div>
@@ -406,7 +347,6 @@
       let map;
       let markers = [];
       let coverageData = [];
-      let regionChart, typeChart, scatterChart;
       let selectedVaccine = "bcg";
       let selectedRegion = "";
       let selectedType = "";
@@ -426,7 +366,6 @@
         loadRegions();
         loadMunicipalityTypes();
         loadVaccineCoverage();
-        loadSummary();
 
         // Event listeners
         document

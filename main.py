@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))  # DON'T CHANGE THIS !!!
+sys.path.insert(0, os.path.dirname(__file__))  # Updated path
 
 import json
 import os
@@ -65,9 +65,7 @@ def create_response(data: Union[Dict, List], message: Optional[str] = None) -> D
 def get_data():
     try:
         # Caminho para o arquivo JSON
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         # Carregar os dados do JSON
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
@@ -82,7 +80,7 @@ def get_data():
 def get_summary():
     try:
         summary_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
+            os.path.dirname(__file__),
             "pasted_content.txt",
         )
 
@@ -115,9 +113,7 @@ Utilize os filtros e visualizações para explorar os dados em mais detalhes."""
 @app.route("/api/regions")
 def get_regions():
     try:
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
             data = json.load(file)
@@ -132,9 +128,7 @@ def get_regions():
 @app.route("/api/municipality_types")
 def get_municipality_types():
     try:
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
             data = json.load(file)
@@ -151,9 +145,7 @@ def get_municipality_types():
 @app.route("/api/vaccine_coverage")
 def get_vaccine_coverage():
     try:
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
             data = json.load(file)
@@ -249,9 +241,7 @@ def get_vaccine_value(data_dict, key, default_value=0.0):
 def get_ubs_data():
     try:
         # Caminho para o arquivo JSON
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         # Carregar os dados do JSON
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
@@ -301,9 +291,7 @@ def get_ubs_data():
 def debug_recortes():
     try:
         # Caminho para o arquivo JSON
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         # Carregar os dados do JSON
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
@@ -348,9 +336,7 @@ def debug_recortes():
 def debug_first_item():
     try:
         # Caminho para o arquivo JSON
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         # Carregar os dados do JSON
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
@@ -406,7 +392,7 @@ def debug_first_item():
 
 @app.route("/")
 def index():
-    return send_from_directory(os.path.dirname(__file__), "index.html")
+    return send_from_directory(".", "index.html")
 
 
 @app.route("/static/<path:path>")
@@ -420,9 +406,7 @@ def get_typology_matrix():
         selected_vaccine = request.args.get("vaccine", "bcg")
         view_type = request.args.get("view", "typology")  # 'typology' or 'region'
 
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
             raw_data = json.load(file)
@@ -765,9 +749,7 @@ def get_coverage_analysis():
         selected_vaccine = request.args.get("vaccine", "bcg")
 
         # Load data
-        data_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "output.json"
-        )
+        data_path = os.path.join(os.path.dirname(__file__), "output.json")
 
         with open(data_path, "r", encoding="utf-8", errors="ignore") as file:
             data = json.load(file)
