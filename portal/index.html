@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal de Análise de Cobertura Vacinal</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/chart.js@4.0.0/dist/chart.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 56px;
+      }
+      .navbar-brand {
+        font-weight: bold;
+      }
+      .sidebar {
+        position: fixed;
+        top: 56px;
+        bottom: 0;
+        left: 0;
+        z-index: 100;
+        padding: 48px 0 0;
+        box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+        background-color: #f8f9fa;
+      }
+      .sidebar-sticky {
+        position: relative;
+        top: 0;
+        height: calc(100vh - 48px);
+        padding-top: 0.5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .nav-link {
+        font-weight: 500;
+        color: #333;
+      }
+      .nav-link.active {
+        color: #007bff;
+      }
+      .main-content {
+        margin-left: 240px;
+        padding: 20px;
+      }
+      #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .card {
+        margin-bottom: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+      .chart-container {
+        position: relative;
+        height: 400px;
+        width: 100%;
+      }
+      .dashboard-header {
+        margin-bottom: 30px;
+      }
+      .dashboard-header h1 {
+        font-weight: 300;
+        font-size: 2.5rem;
+      }
+      .dashboard-header p {
+        color: #6c757d;
+      }
+      .stat-card {
+        text-align: center;
+        padding: 20px;
+      }
+      .stat-card h2 {
+        font-size: 2.5rem;
+        font-weight: 300;
+        margin-bottom: 0;
+      }
+      .stat-card p {
+        color: #6c757d;
+        margin-bottom: 0;
+      }
+      .filter-section {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      @media (max-width: 767.98px) {
+        .sidebar {
+          position: static;
+          height: auto;
+          padding-top: 0;
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+      #heatmapContainer {
+        height: 600px;
+        width: 100%;
+        margin-top: 20px;
+      }
+      .visualization-toggle {
+        margin-bottom: 15px;
+      }
+      .card-header .btn-group {
+        float: right;
+      }
+      .card-header h5 {
+        margin-bottom: 0;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#"
+          >Portal de Análise de Cobertura Vacinal</a
+        >
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="#dashboard">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#mapa">Mapa</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#analises">Análises</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#sobre">Sobre</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+          <div class="sidebar-sticky pt-3">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link active" href="#dashboard">
+                  <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#mapa">
+                  <i class="bi bi-map"></i> Mapa Georreferenciado
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#cobertura-regional">
+                  <i class="bi bi-bar-chart"></i> Cobertura Regional
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#tipologia-municipal">
+                  <i class="bi bi-building"></i> Tipologia Municipal
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#analise-ubs">
+                  <i class="bi bi-hospital"></i> Análise de UBS
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#tendencias">
+                  <i class="bi bi-graph-up"></i> Tendências
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#simulador">
+                  <i class="bi bi-gear"></i> Simulador
+                </a>
+              </li>
+            </ul>
+
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
+            >
+              <span>Relatórios Salvos</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="bi bi-file-text"></i> Relatório Mensal
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="bi bi-file-text"></i> Análise Comparativa
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <i class="bi bi-file-text"></i> Projeções 2025
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <main class="main-content col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          <div class="dashboard-header pt-3 pb-2 mb-3 border-bottom">
+            <h1>Dashboard de Cobertura Vacinal - 2024</h1>
+            <p class="lead">
+              Análise interativa de dados de cobertura vacinal no Brasil
+            </p>
+          </div>
+
+          <div class="filter-section">
+            <div class="row">
+              <div class="col-md-3">
+                <label for="regionSelect" class="form-label">Região</label>
+                <select class="form-select" id="regionSelect">
+                  <option value="">Todas as Regiões</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label for="typeSelect" class="form-label"
+                  >Tipologia Municipal</label
+                >
+                <select class="form-select" id="typeSelect">
+                  <option value="">Todos os Tipos</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label for="vaccineSelect" class="form-label">Vacina</label>
+                <select class="form-select" id="vaccineSelect">
+                  <!-- Options will be populated by updateVaccineOptions() -->
+                </select>
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary w-100" id="applyFilters">
+                  Aplicar Filtros
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-3">
+              <div class="card stat-card">
+                <h2 id="avgCoverage">--</h2>
+                <p>Cobertura Média</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card stat-card">
+                <h2 id="totalUBS">--</h2>
+                <p>Total de UBS</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card stat-card">
+                <h2 id="totalMunicipios">--</h2>
+                <p>Municípios</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card stat-card">
+                <h2 id="populacaoTotal">--</h2>
+                <p>População Total</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="col-md-12">
+              <div class="card">
+                <div
+                  class="card-header d-flex justify-content-between align-items-center"
+                >
+                  <h5>Visualização da Cobertura Vacinal</h5>
+                  <div class="btn-group">
+                    <div class="btn-group me-2">
+                      <button
+                        class="btn btn-outline-primary active"
+                        id="showMap"
+                      >
+                        Mapa
+                      </button>
+                      <button class="btn btn-outline-primary" id="showHeatmap">
+                        Matriz de Calor
+                      </button>
+                    </div>
+                    <div
+                      class="btn-group"
+                      id="heatmapViewToggle"
+                      style="display: none"
+                    >
+                      <button
+                        class="btn btn-outline-secondary active"
+                        id="showTypology"
+                      >
+                        Por Tipologia
+                      </button>
+                      <button class="btn btn-outline-secondary" id="showRegion">
+                        Por Região
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div id="map"></div>
+                  <div id="heatmapContainer" style="display: none"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h5>Cobertura por Região</h5>
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="regionChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h5>Cobertura por Tipologia Municipal</h5>
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="typeChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header">
+                  <h5>
+                    Relação entre UBS por 10.000 habitantes e Cobertura Vacinal
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="scatterChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header">
+                  <h5>Resumo das Análises</h5>
+                </div>
+                <div class="card-body">
+                  <div id="summaryContent" class="p-3">
+                    Carregando resumo...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      // Variáveis globais
+      let map;
+      let markers = [];
+      let coverageData = [];
+      let regionChart, typeChart, scatterChart;
+      let selectedVaccine = "bcg";
+      let selectedRegion = "";
+      let selectedType = "";
+      let currentHeatmapView = "typology";
+
+      // Inicialização
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize application
+        window.chartsEnabled = true;
+        updateVaccineOptions();
+        initializeApplication();
+      });
+
+      // Separate function for app initialization
+      function initializeApplication() {
+        initMap();
+        loadRegions();
+        loadMunicipalityTypes();
+        loadVaccineCoverage();
+        loadSummary();
+
+        // Event listeners
+        document
+          .getElementById("applyFilters")
+          .addEventListener("click", applyFilters);
+        document
+          .getElementById("vaccineSelect")
+          .addEventListener("change", function () {
+            selectedVaccine = this.value;
+          });
+        document
+          .getElementById("regionSelect")
+          .addEventListener("change", function () {
+            selectedRegion = this.value;
+          });
+        document
+          .getElementById("typeSelect")
+          .addEventListener("change", function () {
+            selectedType = this.value;
+          });
+
+        // Set up visualization toggle handlers
+        const mapButton = document.getElementById("showMap");
+        const heatmapButton = document.getElementById("showHeatmap");
+        const mapContainer = document.getElementById("map");
+        const heatmapContainer = document.getElementById("heatmapContainer");
+        const heatmapViewToggle = document.getElementById("heatmapViewToggle");
+        const showTypologyButton = document.getElementById("showTypology");
+        const showRegionButton = document.getElementById("showRegion");
+
+        mapButton.addEventListener("click", function () {
+          mapContainer.style.display = "block";
+          heatmapContainer.style.display = "none";
+          heatmapViewToggle.style.display = "none";
+          mapButton.classList.add("active");
+          heatmapButton.classList.remove("active");
+        });
+
+        heatmapButton.addEventListener("click", async function () {
+          mapContainer.style.display = "none";
+          heatmapContainer.style.display = "block";
+          heatmapViewToggle.style.display = "inline-flex";
+          mapButton.classList.remove("active");
+          heatmapButton.classList.add("active");
+
+          const data = await loadHeatmapData();
+          if (data) {
+            createHeatmap(data);
+          }
+        });
+
+        showTypologyButton.addEventListener("click", async function () {
+          currentHeatmapView = "typology";
+          showTypologyButton.classList.add("active");
+          showRegionButton.classList.remove("active");
+          const data = await loadHeatmapData();
+          if (data) {
+            createHeatmap(data);
+          }
+        });
+
+        showRegionButton.addEventListener("click", async function () {
+          currentHeatmapView = "region";
+          showTypologyButton.classList.remove("active");
+          showRegionButton.classList.add("active");
+          const data = await loadHeatmapData();
+          if (data) {
+            createHeatmap(data);
+          }
+        });
+      }
+
+      // Inicializar mapa
+      function initMap() {
+        map = L.map("map").setView([-15.7801, -47.9292], 4); // Centro no Brasil
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+      }
+
+      // Carregar regiões para o filtro
+      function loadRegions() {
+        fetch("/api/regions")
+          .then((response) => response.json())
+          .then((responseData) => {
+            if (
+              responseData.status === "success" &&
+              Array.isArray(responseData.data)
+            ) {
+              const select = document.getElementById("regionSelect");
+              responseData.data.forEach((region) => {
+                const option = document.createElement("option");
+                option.value = region;
+                option.textContent = region;
+                select.appendChild(option);
+              });
+            } else {
+              console.error("Invalid regions data format:", responseData);
+            }
+          })
+          .catch((error) => console.error("Erro ao carregar regiões:", error));
+      }
+
+      // Carregar tipos de município para o filtro
+      function loadMunicipalityTypes() {
+        fetch("/api/municipality_types")
+          .then((response) => response.json())
+          .then((responseData) => {
+            if (
+              responseData.status === "success" &&
+              Array.isArray(responseData.data)
+            ) {
+              const select = document.getElementById("typeSelect");
+              responseData.data.forEach((type) => {
+                const option = document.createElement("option");
+                option.value = type;
+                option.textContent = type;
+                select.appendChild(option);
+              });
+            } else {
+              console.error(
+                "Invalid municipality types data format:",
+                responseData
+              );
+            }
+          })
+          .catch((error) =>
+            console.error("Erro ao carregar tipos de município:", error)
+          );
+      }
+
+      // Carregar dados de cobertura vacinal
+      function loadVaccineCoverage() {
+        let url = "/api/vaccine_coverage";
+        if (selectedRegion) url += `?region=${selectedRegion}`;
+        if (selectedType)
+          url += `${selectedRegion ? "&" : "?"}type=${selectedType}`;
+
+        fetch(url)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((responseData) => {
+            if (
+              responseData.status === "success" &&
+              Array.isArray(responseData.data)
+            ) {
+              coverageData = responseData.data;
+
+              if (coverageData.length > 0) {
+                updateMap();
+                updateCharts();
+                updateStats();
+              } else {
+                showNoDataMessage();
+              }
+            } else {
+              showNoDataMessage();
+            }
+          })
+          .catch((error) => {
+            console.error("Error loading vaccine coverage data:", error);
+            showNoDataMessage();
+          });
+      }
+
+      // Function to get the appropriate vaccine field name based on selected value
+      function getVaccineFieldName(selectedValue) {
+        return selectedValue;
+      }
+
+      // Carregar resumo das análises
+      function loadSummary() {
+        fetch("/api/summary")
+          .then((response) => response.json())
+          .then((responseData) => {
+            if (
+              responseData.status === "success" &&
+              responseData.data.summary
+            ) {
+              document.getElementById("summaryContent").innerHTML =
+                marked.parse(responseData.data.summary);
+            } else {
+              console.error("Invalid summary data format:", responseData);
+              document.getElementById("summaryContent").innerHTML =
+                "Erro ao carregar o resumo. Por favor, tente novamente mais tarde.";
+            }
+          })
+          .catch((error) => {
+            console.error("Erro ao carregar resumo:", error);
+            document.getElementById("summaryContent").innerHTML =
+              "Erro ao carregar o resumo. Por favor, tente novamente mais tarde.";
+          });
+      }
+
+      // Atualizar mapa com dados filtrados
+      function updateMap() {
+        // Limpar marcadores existentes
+        markers.forEach((marker) => map.removeLayer(marker));
+        markers = [];
+
+        // Adicionar novos marcadores
+        coverageData.forEach((item) => {
+          if (item.latitude && item.longitude) {
+            const vaccineField = getVaccineFieldName(selectedVaccine);
+            const coverage = parsePercent(item[vaccineField]);
+            const color = getCoverageColor(coverage);
+
+            const marker = L.circleMarker([item.latitude, item.longitude], {
+              radius: 8,
+              fillColor: color,
+              color: "#000",
+              weight: 1,
+              opacity: 1,
+              fillOpacity: 0.8,
+            }).addTo(map);
+
+            marker.bindPopup(`
+                        <strong>${item.municipio} - ${item.uf}</strong><br>
+                        Região: ${item.regiao}<br>
+                        Tipo: ${item.tipo}<br>
+                        Cobertura ${getVaccineName(
+                          selectedVaccine
+                        )}: ${coverage.toFixed(2)}%<br>
+                        UBS: ${item.ubs_count}<br>
+                        População: ${item.populacao.toLocaleString("pt-BR")}
+                    `);
+
+            markers.push(marker);
+          }
+        });
+      }
+
+      // Atualizar gráficos com dados filtrados
+      function updateCharts() {
+        if (!window.chartsEnabled) {
+          console.warn("Charts disabled - skipping chart updates");
+          return;
+        }
+
+        try {
+          updateRegionChart();
+          updateTypeChart();
+          updateScatterChart();
+        } catch (e) {
+          console.error("Error updating charts:", e);
+        }
+      }
+
+      // Atualizar estatísticas
+      function updateStats() {
+        // Ensure we have data
+        if (!coverageData || coverageData.length === 0) {
+          console.warn("No coverage data available for statistics");
+          // Set defaults
+          document.getElementById("avgCoverage").textContent = "0,00%";
+          document.getElementById("totalUBS").textContent = "0";
+          document.getElementById("totalMunicipios").textContent = "0";
+          document.getElementById("populacaoTotal").textContent = "0";
+          return;
+        }
+
+        const totalMunicipios = coverageData.length;
+        let totalUBS = 0;
+        let totalPopulacao = 0;
+        let totalCobertura = 0;
+        let validCoverageCount = 0;
+
+        const vaccineField = getVaccineFieldName(selectedVaccine);
+
+        coverageData.forEach((item) => {
+          // Ensure we have valid numbers by converting and checking
+          const ubs = parseInt(item.ubs_count) || 0;
+          const pop = parseFloat(item.populacao) || 0;
+          let coverage = parsePercent(item[vaccineField]);
+
+          totalUBS += ubs;
+          totalPopulacao += pop;
+
+          if (!isNaN(coverage)) {
+            totalCobertura += coverage;
+            validCoverageCount++;
+          }
+        });
+
+        // Only divide by valid count to avoid skewing the average
+        const avgCobertura =
+          validCoverageCount > 0 ? totalCobertura / validCoverageCount : 0;
+
+        // Update the UI elements and format properly - using comma for decimal separator
+        document.getElementById("avgCoverage").textContent =
+          avgCobertura.toFixed(2).replace(".", ",") + "%";
+        document.getElementById("totalUBS").textContent =
+          totalUBS.toLocaleString("pt-BR");
+        document.getElementById("totalMunicipios").textContent =
+          totalMunicipios.toLocaleString("pt-BR");
+        document.getElementById("populacaoTotal").textContent =
+          formatPopulation(totalPopulacao);
+      }
+
+      // Atualizar gráfico de cobertura por região
+      function updateRegionChart() {
+        if (!window.chartsEnabled || typeof Chart === "undefined") {
+          console.warn(
+            "Charts disabled or Chart.js not available - skipping regionChart update"
+          );
+          return;
+        }
+
+        try {
+          const regions = {};
+          const vaccineField = getVaccineFieldName(selectedVaccine);
+
+          coverageData.forEach((item) => {
+            if (!regions[item.regiao]) {
+              regions[item.regiao] = {
+                total: 0,
+                count: 0,
+              };
+            }
+            const coverage = parsePercent(item[vaccineField]);
+            if (!isNaN(coverage)) {
+              regions[item.regiao].total += coverage;
+              regions[item.regiao].count++;
+            }
+          });
+
+          const labels = Object.keys(regions);
+          const data = labels.map(
+            (region) => regions[region].total / (regions[region].count || 1)
+          );
+
+          const ctx = document.getElementById("regionChart").getContext("2d");
+
+          if (window.regionChart) window.regionChart.destroy();
+
+          window.regionChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: `Cobertura Média de ${getVaccineName(
+                    selectedVaccine
+                  )} (%)`,
+                  data: data,
+                  backgroundColor: labels.map((_, i) => getChartColor(i)),
+                  borderColor: labels.map((_, i) => getChartColor(i, 0.8)),
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Cobertura Média (%)",
+                  },
+                },
+              },
+            },
+          });
+        } catch (e) {
+          console.error("Error creating region chart:", e);
+        }
+      }
+
+      // Atualizar gráfico de cobertura por tipologia municipal
+      function updateTypeChart() {
+        if (!window.chartsEnabled || typeof Chart === "undefined") {
+          console.warn(
+            "Charts disabled or Chart.js not available - skipping typeChart update"
+          );
+          return;
+        }
+
+        try {
+          const types = {};
+          const vaccineField = getVaccineFieldName(selectedVaccine);
+
+          coverageData.forEach((item) => {
+            if (!types[item.tipo]) {
+              types[item.tipo] = {
+                total: 0,
+                count: 0,
+              };
+            }
+            const coverage = parsePercent(item[vaccineField]);
+            if (!isNaN(coverage)) {
+              types[item.tipo].total += coverage;
+              types[item.tipo].count++;
+            }
+          });
+
+          const labels = Object.keys(types);
+          const data = labels.map(
+            (type) => types[type].total / (types[type].count || 1)
+          );
+
+          const ctx = document.getElementById("typeChart").getContext("2d");
+
+          if (window.typeChart) window.typeChart.destroy();
+
+          window.typeChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: `Cobertura Média de ${getVaccineName(
+                    selectedVaccine
+                  )} (%)`,
+                  data: data,
+                  backgroundColor: labels.map((_, i) => getChartColor(i + 5)),
+                  borderColor: labels.map((_, i) => getChartColor(i + 5, 0.8)),
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Cobertura Média (%)",
+                  },
+                },
+              },
+            },
+          });
+        } catch (e) {
+          console.error("Error creating type chart:", e);
+        }
+      }
+
+      // Atualizar gráfico de dispersão (UBS por 10.000 hab vs Cobertura)
+      function updateScatterChart() {
+        if (!window.chartsEnabled || typeof Chart === "undefined") {
+          console.warn(
+            "Charts disabled or Chart.js not available - skipping scatterChart update"
+          );
+          return;
+        }
+
+        try {
+          const vaccineField = getVaccineFieldName(selectedVaccine);
+
+          const data = coverageData.map((item) => {
+            const ubsPer10k =
+              item.populacao > 0
+                ? (item.ubs_count / item.populacao) * 10000
+                : 0;
+            const coverage = parsePercent(item[vaccineField]);
+            return {
+              x: ubsPer10k,
+              y: coverage,
+              municipio: item.municipio,
+              regiao: item.regiao,
+              tipo: item.tipo,
+            };
+          });
+
+          const ctx = document.getElementById("scatterChart").getContext("2d");
+
+          if (window.scatterChart) window.scatterChart.destroy();
+
+          window.scatterChart = new Chart(ctx, {
+            type: "scatter",
+            data: {
+              datasets: [
+                {
+                  label: `UBS por 10.000 hab vs Cobertura de ${getVaccineName(
+                    selectedVaccine
+                  )}`,
+                  data: data,
+                  backgroundColor: "rgba(54, 162, 235, 0.6)",
+                  borderColor: "rgba(54, 162, 235, 1)",
+                  pointRadius: 6,
+                  pointHoverRadius: 8,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "UBS por 10.000 habitantes",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Cobertura Vacinal (%)",
+                  },
+                },
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      const point = context.raw;
+                      return [
+                        `${point.municipio}`,
+                        `Região: ${point.regiao}`,
+                        `Tipo: ${point.tipo}`,
+                        `UBS por 10k hab: ${point.x.toFixed(2)}`,
+                        `Cobertura: ${point.y.toFixed(2)}%`,
+                      ];
+                    },
+                  },
+                },
+              },
+            },
+          });
+        } catch (e) {
+          console.error("Error creating scatter chart:", e);
+        }
+      }
+
+      // Aplicar filtros
+      function applyFilters() {
+        loadVaccineCoverage();
+
+        // Update heatmap if it's visible
+        const heatmapContainer = document.getElementById("heatmapContainer");
+        if (heatmapContainer.style.display !== "none") {
+          loadHeatmapData().then((data) => createHeatmap(data));
+        }
+      }
+
+      // Funções auxiliares
+      function getCoverageColor(coverage) {
+        if (coverage < 70) return "#d73027";
+        if (coverage < 80) return "#fc8d59";
+        if (coverage < 90) return "#fee08b";
+        if (coverage < 100) return "#d9ef8b";
+        return "#91cf60";
+      }
+
+      function getChartColor(index, alpha = 0.6) {
+        const colors = [
+          `rgba(54, 162, 235, ${alpha})`,
+          `rgba(255, 99, 132, ${alpha})`,
+          `rgba(75, 192, 192, ${alpha})`,
+          `rgba(255, 159, 64, ${alpha})`,
+          `rgba(153, 102, 255, ${alpha})`,
+          `rgba(255, 205, 86, ${alpha})`,
+          `rgba(201, 203, 207, ${alpha})`,
+          `rgba(255, 99, 71, ${alpha})`,
+          `rgba(46, 139, 87, ${alpha})`,
+          `rgba(106, 90, 205, ${alpha})`,
+        ];
+        return colors[index % colors.length];
+      }
+
+      function getVaccineName(vaccineKey) {
+        // Map from field names to display names
+        const displayNames = {
+          bcg: "BCG",
+          dtp: "DTP",
+          penta: "Penta",
+          polio: "Polio Injetável",
+          rotavirus: "Rotavírus",
+          triplice_viral_1: "Tríplice Viral (1ª dose)",
+          triplice_viral_2: "Tríplice Viral (2ª dose)",
+          varicela: "Varicela",
+        };
+
+        return displayNames[vaccineKey] || vaccineKey;
+      }
+
+      function formatPopulation(population) {
+        if (population >= 1000000) {
+          return (population / 1000000).toFixed(1) + "M";
+        } else if (population >= 1000) {
+          return (population / 1000).toFixed(1) + "K";
+        } else {
+          return population.toString();
+        }
+      }
+
+      // Parse percentage values that might use comma as decimal separator or have special values
+      function parsePercent(value) {
+        if (!value) return 0;
+
+        // If it's already a number, return it
+        if (typeof value === "number") return value;
+
+        // Handle special values
+        if (typeof value === "string") {
+          // Handle 'No Data' values
+          if (
+            value === "#N/D" ||
+            value === "N/D" ||
+            value === "N/A" ||
+            value === "" ||
+            value.toLowerCase() === "null" ||
+            value.toLowerCase() === "undefined"
+          ) {
+            return 0;
+          }
+
+          // Remove any % signs and whitespace
+          value = value.replace("%", "").trim();
+
+          // Convert string with comma to float
+          const parsed = parseFloat(value.replace(",", "."));
+          return isNaN(parsed) ? 0 : parsed;
+        }
+
+        return 0;
+      }
+
+      // Update the dropdown to use the actual field names from the data
+      function updateVaccineOptions() {
+        const vaccineSelect = document.getElementById("vaccineSelect");
+        // Clear current options
+        vaccineSelect.innerHTML = "";
+
+        // Add "All Vaccines" option first
+        const allOption = document.createElement("option");
+        allOption.value = "all";
+        allOption.textContent = "Todas as Vacinas";
+        vaccineSelect.appendChild(allOption);
+
+        // Add individual vaccine options
+        const options = [
+          { value: "bcg", text: "BCG" },
+          { value: "dtp", text: "DTP" },
+          { value: "penta", text: "Penta (DTP/HepB/Hib)" },
+          { value: "polio", text: "Polio Injetável (VIP)" },
+          { value: "rotavirus", text: "Rotavírus" },
+          { value: "triplice_viral_1", text: "Tríplice Viral - 1° Dose" },
+          { value: "triplice_viral_2", text: "Tríplice Viral - 2° Dose" },
+          { value: "varicela", text: "Varicela" },
+        ];
+
+        options.forEach((option) => {
+          const optElement = document.createElement("option");
+          optElement.value = option.value;
+          optElement.textContent = option.text;
+          vaccineSelect.appendChild(optElement);
+        });
+      }
+
+      // Add new functions for heatmap
+      async function loadHeatmapData() {
+        try {
+          const response = await fetch(
+            `/api/typology_matrix?vaccine=${selectedVaccine}&view=${currentHeatmapView}`
+          );
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const responseData = await response.json();
+
+          if (responseData.status === "success" && responseData.data) {
+            return responseData.data;
+          } else {
+            console.error("Invalid heatmap data format:", responseData);
+            return null;
+          }
+        } catch (error) {
+          console.error("Error loading heatmap data:", error);
+          return null;
+        }
+      }
+
+      function createHeatmap(data) {
+        if (!data || !data.matrix_data) return;
+
+        // Process data for heatmap
+        const categories = data.metadata.categories;
+        const vaccines = data.metadata.vaccine_types;
+        const viewType = data.metadata.view_type;
+
+        // Create z-values matrix
+        const zValues = [];
+        const textValues = [];
+
+        categories.forEach((category) => {
+          const row = [];
+          const textRow = [];
+          vaccines.forEach((vaccine) => {
+            const entry = data.matrix_data.find(
+              (item) =>
+                item.category === category && item.vaccine_type === vaccine
+            );
+            row.push(entry ? entry.coverage_rate : 0);
+            textRow.push(
+              entry
+                ? `Cobertura: ${entry.coverage_rate}%<br>UBS: ${
+                    entry.ubs_count
+                  }<br>População: ${entry.population.toLocaleString("pt-BR")}`
+                : "Sem dados"
+            );
+          });
+          zValues.push(row);
+          textValues.push(textRow);
+        });
+
+        const title =
+          viewType === "typology"
+            ? "Matriz de Cobertura Vacinal por Tipologia Municipal"
+            : "Matriz de Cobertura Vacinal por Região";
+
+        const layout = {
+          title: title,
+          xaxis: {
+            title: "Vacinas",
+            tickangle: 45,
+          },
+          yaxis: {
+            title: viewType === "typology" ? "Tipologia Municipal" : "Região",
+          },
+          annotations: [
+            {
+              x: 1.15,
+              y: 1.05,
+              xref: "paper",
+              yref: "paper",
+              text: "Cobertura (%)",
+              showarrow: false,
+            },
+          ],
+          margin: {
+            l: 150,
+            r: 50,
+            b: 100,
+            t: 50,
+            pad: 4,
+          },
+        };
+
+        const heatmapData = [
+          {
+            z: zValues,
+            x: vaccines.map(getVaccineName),
+            y: categories,
+            type: "heatmap",
+            hoverongaps: false,
+            hoverinfo: "text",
+            text: textValues,
+            colorscale: [
+              [0, "#d73027"], // < 70%
+              [0.7, "#fc8d59"], // 70-80%
+              [0.8, "#fee08b"], // 80-90%
+              [0.9, "#d9ef8b"], // 90-100%
+              [1, "#91cf60"], // > 100%
+            ],
+          },
+        ];
+
+        Plotly.newPlot("heatmapContainer", heatmapData, layout);
+      }
+
+      // Add clear functions
+      function clearCharts() {
+        try {
+          if (
+            window.regionChart &&
+            typeof window.regionChart.destroy === "function"
+          ) {
+            window.regionChart.destroy();
+          }
+          if (
+            window.typeChart &&
+            typeof window.typeChart.destroy === "function"
+          ) {
+            window.typeChart.destroy();
+          }
+          if (
+            window.scatterChart &&
+            typeof window.scatterChart.destroy === "function"
+          ) {
+            window.scatterChart.destroy();
+          }
+
+          // Reset chart references
+          window.regionChart = null;
+          window.typeChart = null;
+          window.scatterChart = null;
+        } catch (error) {
+          console.error("Error clearing charts:", error);
+        }
+      }
+
+      function clearMap() {
+        markers.forEach((marker) => map.removeLayer(marker));
+        markers = [];
+      }
+
+      function clearStats() {
+        document.getElementById("avgCoverage").textContent = "--";
+        document.getElementById("totalUBS").textContent = "--";
+        document.getElementById("totalMunicipios").textContent = "--";
+        document.getElementById("populacaoTotal").textContent = "--";
+      }
+
+      // Add helper function for no data message
+      function showNoDataMessage() {
+        // Clear existing visualizations
+        clearMap();
+        clearCharts();
+        clearStats();
+
+        // Show message to user
+        const message =
+          "Não há dados disponíveis para os filtros selecionados.";
+        document.getElementById("summaryContent").innerHTML = message;
+      }
+    </script>
+  </body>
+</html>
