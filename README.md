@@ -45,14 +45,14 @@ O Portal de Análise de Cobertura Vacinal 2024 (faixa etária 5 anos) é uma apl
 
 ## 🏗 Estrutura do Projeto
 
-\`\`\`
+```
 projeto/
-├── main.py # Arquivo principal da aplicação Flask
-├── index.html # Interface do usuário
-├── requirements.txt # Dependências do projeto
-├── output.json # Dados de cobertura vacinal
-└── README.md # Documentação do projeto
-\`\`\`
+├── main.py           # Arquivo principal da aplicação Flask
+├── index.html        # Interface do usuário
+├── requirements.txt  # Dependências do projeto
+├── output.json      # Dados de cobertura vacinal
+└── README.md        # Documentação do projeto
+```
 
 ## 🔄 Como Funciona uma Aplicação Flask
 
@@ -66,40 +66,40 @@ Flask é um microframework web para Python, conhecido por sua simplicidade e fle
 
    - Definem os endpoints da aplicação
    - Exemplo:
-     \`\`\`python
+     ```python
      @app.route("/")
      def index():
-     return send_from_directory(".", "index.html")
-     \`\`\`
+         return send_from_directory(".", "index.html")
+     ```
 
 2. **Views (Visualizações)**
 
    - Funções que processam requisições e retornam respostas
    - Exemplo:
-     \`\`\`python
+     ```python
      @app.route("/api/data")
      def get_data():
-     try:
-     data_path = os.path.join(os.path.dirname(**file**), "output.json")
-     with open(data_path, "r", encoding="utf-8") as file:
-     data = json.load(file)
-     return jsonify(create_response(data))
-     except Exception as e:
-     return jsonify(create_response(None, str(e))), 500
-     \`\`\`
+         try:
+             data_path = os.path.join(os.path.dirname(__file__), "output.json")
+             with open(data_path, "r", encoding="utf-8") as file:
+                 data = json.load(file)
+             return jsonify(create_response(data))
+         except Exception as e:
+             return jsonify(create_response(None, str(e))), 500
+     ```
 
 3. **Models (Modelos)**
    - Representam a estrutura dos dados
    - Exemplo:
-     \`\`\`python
+     ```python
      @dataclass
      class VaccineCoverage:
-     municipio: str
-     regiao: str
-     tipo: str
-     uf: str
-     bcg: float # ... outros campos
-     \`\`\`
+         municipio: str
+         regiao: str
+         tipo: str
+         uf: str
+         bcg: float # ... outros campos
+     ```
 
 ### Fluxo de Dados
 
@@ -111,38 +111,42 @@ Flask é um microframework web para Python, conhecido por sua simplicidade e fle
 ## 📥 Instalação e Execução
 
 1. Clone o repositório:
-   \`\`\`bash
+
+   ```bash
    git clone [URL_DO_REPOSITORIO]
    cd [NOME_DO_DIRETORIO]
-   \`\`\`
+   ```
 
 2. Crie um ambiente virtual:
-   \`\`\`bash
+
+   ```bash
    python -m venv venv
-   \`\`\`
+   ```
 
 3. Ative o ambiente virtual:
 
    - Windows:
-     \`\`\`bash
-     venv\\Scripts\\activate
-     \`\`\`
+     ```bash
+     venv\Scripts\activate
+     ```
    - Linux/Mac:
-     \`\`\`bash
+     ```bash
      source venv/bin/activate
-     \`\`\`
+     ```
 
 4. Instale as dependências:
-   \`\`\`bash
+
+   ```bash
    pip install -r requirements.txt
-   \`\`\`
+   ```
 
 5. Execute a aplicação:
-   \`\`\`bash
-   python main.py
-   \`\`\`
 
-6. Acesse a aplicação em \`http://localhost:5000\`
+   ```bash
+   python main.py
+   ```
+
+6. Acesse a aplicação em `http://localhost:5000`
 
 ## 💡 Funcionalidades
 
@@ -171,57 +175,58 @@ Flask é um microframework web para Python, conhecido por sua simplicidade e fle
 
 ### Endpoints Principais
 
-1. \`/api/data\`
+1. `/api/data`
 
    - Retorna todos os dados de cobertura vacinal
 
-2. \`/api/regions\`
+2. `/api/regions`
 
    - Lista todas as regiões disponíveis
 
-3. \`/api/municipality_types\`
+3. `/api/municipality_types`
 
    - Lista todos os tipos de municípios
 
-4. \`/api/vaccine_coverage\`
+4. `/api/vaccine_coverage`
    - Retorna dados de cobertura com filtros
 
 ### Formato de Resposta
 
 Todas as respostas seguem o formato:
-\`\`\`json
+
+```json
 {
-"status": "success",
-"data": [...],
-"message": null,
-"timestamp": "2024-..."
+    "status": "success",
+    "data": [...],
+    "message": null,
+    "timestamp": "2024-..."
 }
-\`\`\`
+```
 
 ## 📊 Estrutura de Dados
 
 ### Dados de Cobertura Vacinal
 
-\`\`\`python
+```python
 {
-"municipio": "string",
-"regiao": "string",
-"tipo": "string",
-"uf": "string",
-"bcg": float,
-"dtp": float,
-"penta": float,
-"polio": float,
-"rotavirus": float,
-"triplice_viral_1": float,
-"triplice_viral_2": float,
-"varicela": float,
-"latitude": float,
-"longitude": float,
-"ubs_count": int,
-"populacao": float
+    "municipio": "string",
+    "regiao": "string",
+    "tipo": "string",
+    "uf": "string",
+    "bcg": float,
+    "dtp": float,
+    "penta": float,
+    "polio": float,
+    "rotavirus": float,
+    "triplice_viral_1": float,
+    "triplice_viral_2": float,
+    "varicela": float,
+    "latitude": float,
+    "longitude": float,
+    "ubs_count": int,
+    "populacao": float
 }
-\`\`\`
+```
 
 ## 👥 Contribuidores
 
@@ -234,4 +239,6 @@ Este projeto foi desenvolvido pelo Grupo 4 do MBA em Ciência de Dados e Intelig
 - Os dados são atualizados em tempo real conforme os filtros são aplicados
 - O sistema é otimizado para performance com grandes volumes de dados
 
-Desenvolvido com ❤️ pelo Grupo 4 - MBA ENAP \_
+---
+
+Desenvolvido com ❤️ pelo Grupo 4 - MBA ENAP
